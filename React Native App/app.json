@@ -1,0 +1,15 @@
+{
+   "expo": {
+    "name": "Led Light Controller",
+    "icon": "./media/rgb_led.png",
+    "version": "1.0.0",
+    "slug": "led-light-controller",
+    "sdkVersion": "26.0.0",
+    "ios": {
+      "bundleIdentifier": "com.Mikhail.LedLightcontroller"
+    },
+    "android": {
+      "package": "com.Mikhail.LedLightcontroller"
+    }
+   }
+}
