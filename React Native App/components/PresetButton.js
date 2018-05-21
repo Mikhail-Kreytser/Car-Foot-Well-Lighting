@@ -1,5 +1,11 @@
+import {
+  TouchableOpacity,
+  ImageBackground,
+  StyleSheet,
+  View,
+  Text
+} from 'react-native'
 import React from 'react'
-import {View, TouchableOpacity, ImageBackground, Text} from 'react-native'
 
 class PresetButton extends React.Component {
 
@@ -15,7 +21,7 @@ class PresetButton extends React.Component {
   }
 
   render() {
-    return (        
+    return (
       // flex: 1, flexDirection: 'column', 
       <View style={{alignItems: 'center'}}>
         <TouchableOpacity style={{borderRadius: 40, height: 35, width:310, marginTop: 20, alignItems: 'center'}}
@@ -45,3 +51,63 @@ class PresetButton extends React.Component {
 
 }
 export default PresetButton;
+
+const styles = StyleSheet.create({
+    buttonText:{
+    color:'white',
+    fontWeight: 'bold', 
+    paddingTop:8,
+  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: '#212021',
+  //   flexDirection: 'column',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+  // title:{ 
+  //   flex: .5,
+  //   paddingTop: 20,
+  //   color: 'white',
+  //   fontSize: 30,
+  // },
+  // buttons:{
+  //   justifyContent: 'center',
+  //   alignItems: 'stretch',
+  //   flexDirection: 'row',
+  // },
+  // presets:{
+  //   flex: 1,
+  //   flexDirection: 'column',
+  //   alignItems: 'center',
+  // },
+  // button:{
+  //   alignItems: 'center',
+  //   justifyContent: 'center', 
+  //   padding:10,
+  //   flex:1,
+  // },
+  // body: {  
+  //   flex: 5,
+  //   minWidth: '100%',
+  //   backgroundColor: '#212021',
+  // },
+  // wheel:{ 
+  //   flex: 1,
+  // }, 
+  // picker:{
+  //   color: 'black',
+  //   backgroundColor: '#fff',
+  //   maxWidth: '50%',
+  //   left: '25%',
+  //   alignSelf: 'stretch', 
+  //           alignItems:'center', 
+  //           justifyContent:'center',
+  // },
+  // pickerItem:{
+  //   flex: 1,
+  //   justifyContent: 'center',
+  //   color: 'white',
+  //   fontSize: 30,
+  // }
+});
