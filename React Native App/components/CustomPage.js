@@ -1,14 +1,27 @@
-import React from 'react'
-import {View, StyleSheet, Alert} from 'react-native'
 import CustomButton from './CustomButton.js'
 import ColorWheel from './ColorWheel.js'
+import React from 'react'
+import {
+  StyleSheet,
+  Alert,
+  View
+  } from 'react-native'
 
 class CustomPage extends React.Component {
 
   constructor(props) {
     super(props)
 
-    this.state = {driver: '#696969', shotgun:'#696969', rearLeft:'#696969', rearRight: '#696969', all: '#696969', selection:"AL", gray:true}
+    this.state = {
+      connected: this.props.connected,
+      rearRight: '#696969', 
+      rearLeft: '#696969', 
+      shotgun: '#696969', 
+      driver: '#696969', 
+      selection:"AL", 
+      all: '#696969', 
+      gray:true,
+    }
 
     this.setColor = this.setColor.bind(this)
     this.sendCustomColor = this.sendCustomColor.bind(this)
@@ -32,10 +45,10 @@ class CustomPage extends React.Component {
           break;
         default:
           this.setState({
-            driver: color,
-            shotgun: color,
-            rearLeft: color,
             rearRight: color,
+            rearLeft: color,
+            shotgun: color,
+            driver: color,
             all:color,
           })
       }
@@ -117,62 +130,62 @@ class CustomPage extends React.Component {
 }
 export default CustomPage;
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#212021',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title:{ 
-    flex: .5,
-    paddingTop: 20,
-    color: 'white',
-    fontSize: 30,
-  },
-  buttons:{
-    justifyContent: 'center',
-    alignItems: 'stretch',
-    flexDirection: 'row',
-  },
-  presets:{
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  button:{
-    alignItems: 'center',
-    justifyContent: 'center', 
-    padding:10,
-    flex:1,
-  },
-  buttonText:{
-    color:'white',
-    fontWeight: 'bold', 
-    paddingTop:8,
-  },
-  body: {  
-    flex: 5,
-    minWidth: '100%',
-    backgroundColor: '#212021',
-  },
   wheel:{ 
     flex: 1,
   }, 
-  picker:{
-    color: 'black',
-    backgroundColor: '#fff',
-    maxWidth: '50%',
-    left: '25%',
-    alignSelf: 'stretch', 
-            alignItems:'center', 
-            justifyContent:'center',
-  },
-  pickerItem:{
-    flex: 1,
-    justifyContent: 'center',
-    color: 'white',
-    fontSize: 30,
-  }
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: '#212021',
+  //   flexDirection: 'column',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+  // title:{ 
+  //   flex: .5,
+  //   paddingTop: 20,
+  //   color: 'white',
+  //   fontSize: 30,
+  // },
+  // buttons:{
+  //   justifyContent: 'center',
+  //   alignItems: 'stretch',
+  //   flexDirection: 'row',
+  // },
+  // presets:{
+  //   flex: 1,
+  //   flexDirection: 'column',
+  //   alignItems: 'center',
+  // },
+  // button:{
+  //   alignItems: 'center',
+  //   justifyContent: 'center', 
+  //   padding:10,
+  //   flex:1,
+  // },
+  // buttonText:{
+  //   color:'white',
+  //   fontWeight: 'bold', 
+  //   paddingTop:8,
+  // },
+  // body: {  
+  //   flex: 5,
+  //   minWidth: '100%',
+  //   backgroundColor: '#212021',
+  // },
+  // picker:{
+  //   color: 'black',
+  //   backgroundColor: '#fff',
+  //   maxWidth: '50%',
+  //   left: '25%',
+  //   alignSelf: 'stretch', 
+  //           alignItems:'center', 
+  //           justifyContent:'center',
+  // },
+  // pickerItem:{
+  //   flex: 1,
+  //   justifyContent: 'center',
+  //   color: 'white',
+  //   fontSize: 30,
+  // }
 });
 

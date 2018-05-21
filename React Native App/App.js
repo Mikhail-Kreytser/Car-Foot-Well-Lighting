@@ -1,68 +1,127 @@
-import React from 'react';
-import { StyleSheet, Text, View, Picker, Alert, Button, TouchableOpacity, Image, ImageBackground, ActivityIndicator} from 'react-native';
+import ReconnectingWebSocket from 'reconnecting-websocket'
 import FlipToggle from 'react-native-flip-toggle-button'
 import PresetButton from './components/PresetButton.js'
 // import CustomButton from '.components/CustomButton.js'
 import CustomPage from './components/CustomPage.js'
 import ColorWheel from './components/ColorWheel.js'
 import Lock from './components/Lock.js'
-import WS from 'react-native-websocket'
+import React from 'react'
+
+import { 
+  ActivityIndicator,
+  TouchableOpacity,
+  ImageBackground,
+  StyleSheet, 
+  Picker,
+  Button,
+  Alert,
+  Image,
+  Text, 
+  View
+} from 'react-native'
+
 
 export default class App extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = { gray:true, preset:'customColor', pageToggle:true, connected:false, lockState: false,
-                }
+    this.state = { 
+      preset:'customColor',
+      lockState: false,
+      pageToggle:true,
+      connected:false,
+      gray:true
+    }
+
+    this.socket = new ReconnectingWebSocket('ws://192.168.4.1:81/')
+
+    this.socket.addEventListener('open', () => {
+        this.socket.send('Hello')
+        this.setState({connected:true})
+    });
+
+    this.socket.addEventListener('error', () => {
+        this.setState({connected:false})
+    });
+
+    this.socket.addEventListener('close', () => {
+        this.setState({connected:false})
+    });
+
     this.sendPreset = this.sendPreset.bind(this)
     this.sendLockState = this.sendLockState.bind(this)
     this.sendPresetSpeed = this.sendPresetSpeed.bind(this)
+    this.sendCustomColor = this.sendCustomColor.bind(this)
   }
 
-  
+      // var ws = new WebSocket('ws://192.168.4.1:81/');
+
+    // ws.onopen = () => {
+    //   this.ws.send('Hello');
+    //   this.setState({connected:true})}}
+    // };
+
+    // ws.onmessage = (e) => {
+    //   // a message was received
+    //   console.log(e.data);
+    // };
+
+    // ws.onerror = (e) => {
+    //   // an error occurred
+    //   console.log(e.message);
+    // };
+
+    // ws.onclose = (e) => {
+    //   // connection closed
+    //   this.setState({connected:false})
+    // };
+
+  sendCustomColor(data){
+    if(this.state.connected){
+      this.setState({gray:true, preset:'customColor'})
+      // this.rws.send(data)
+      this.socket.send(data)
+    }
+    else
+      Alert.alert('Not Connected')
+  }
 
   sendLockState(lockState){
-    // if(this.state.connected){
-    //   if(lockState)
-    //     this.ws.send('mishaOnline')
-    //   else
-    //     this.ws.send('mishaOFFOnline')
-    // }
-    // else
-    //   Alert.alert('Not Connected')
+    if(this.state.connected){
+      if(lockState)
+        // this.rws.send('mishaOnline')
+        this.socket.send('mishaOnline')
+
+      else
+        // this.rws.send('mishaOFFOnline')
+        this.socket.send('mishaOFFOnline')
+
+    }
+    else
+      Alert.alert('Not Connected')
   }
 
   sendPreset(preset){
-    // if(this.state.connected){
-    //   this.setState({gray:true, preset:preset})
-    //   this.ws.send(preset)
-    // }
-    // else
-    //   Alert.alert('Not Connected')
+    if(this.state.connected){
+      this.setState({gray:true, preset:preset})
+      // this.rws.send(preset)
+      this.socket.send(preset)
+    }
+    else
+      Alert.alert('Not Connected')
   }
 
   sendPresetSpeed(action){
-    // if(this.state.connected)
-    //   this.ws.send(action)
-    // else
-    //   Alert.alert('Not Connected')
+    if(this.state.connected)
+      this.socket.send(action)
+      // this.rws.send(action)
+    else
+      Alert.alert('Not Connected')
   }
 
   render() {
-    return (      
+    return (
       <View style={styles.container}>
-        <WS
-          ref={ref => {this.ws = ref}}
-          url="ws://192.168.4.1:81/"
-          onOpen={() => {
-            this.ws.send('Hello');
-            this.setState({connected:true})}}
-          onMessage={()=>{}}
-          onError={()=>{this.setState({connected:false})}}
-          onClose={()=>{this.setState({connected:false})}}
-          reconnect // Will try to reconnect onClose
-        />
-
         <Text style={styles.title}>ColorPicker</Text>
         <View style={styles.buttons}>
           <FlipToggle
@@ -79,7 +138,7 @@ export default class App extends React.Component {
           />
         </View>
         <View style={styles.body}>
-          {this.state.pageToggle && <CustomPage send={ /*this.ws.send*/ console.log()}/>}
+          {this.state.pageToggle && <CustomPage connected={this.state.connected} send={this.sendCustomColor}/>}
           {!this.state.pageToggle && <View>
             <PresetButton preset={'rainbow'} currentPreset={this.state.preset} sendPresetSpeed={this.sendPresetSpeed} sendPreset={this.sendPreset}/>
             <PresetButton preset={'police'} currentPreset={this.state.preset} sendPresetSpeed={this.sendPresetSpeed} sendPreset={this.sendPreset}/>
