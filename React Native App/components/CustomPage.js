@@ -13,14 +13,14 @@ class CustomPage extends React.Component {
     super(props)
 
     this.state = {
-      connected: this.props.connected,
       rearRight: '#696969', 
       rearLeft: '#696969', 
       shotgun: '#696969', 
       driver: '#696969', 
       selection:"AL", 
-      all: '#696969', 
-      gray:true,
+      all: '#696969',
+      lastMsg: "", 
+      gray: true,
     }
 
     this.setColor = this.setColor.bind(this)
@@ -28,8 +28,12 @@ class CustomPage extends React.Component {
     this.changeSelection = this.changeSelection.bind(this)
   }
 
+  static navigationOptions = {
+    header: null,
+  };
+
   setColor(color){
-    if(this.state.connected){
+    if(this.props.connected){
       switch(this.state.selection){
         case 'FD':
           this.setState({driver:color})
@@ -78,7 +82,7 @@ class CustomPage extends React.Component {
   }
 
   sendCustomColor(color){
-     if(this.state.connected){
+    if(this.props.connected){
       var r = "000"
       var g = "000"
       var b = "000"
@@ -103,10 +107,15 @@ class CustomPage extends React.Component {
         b = "B0"+blue
       else if(blue >= 0)
         b = "B00"+blue
-      this.props.send(r+g+b+this.state.selection)
+
+      var msg = r+g+b+this.state.selection
+      if( msg !== this.state.lastMsg){
+        this.setState({lastMsg:msg})
+        this.props.send(msg)
+      }
     }
-    else
-      Alert.alert('Not Connected')
+    // else
+    //   Alert.alert('Not Connected')
   }
 
   render() {
@@ -167,11 +176,11 @@ const styles = StyleSheet.create({
   //   fontWeight: 'bold', 
   //   paddingTop:8,
   // },
-  // body: {  
-  //   flex: 5,
-  //   minWidth: '100%',
-  //   backgroundColor: '#212021',
-  // },
+  body: {  
+    flex: 5,
+    minWidth: '100%',
+    backgroundColor: '#212021',
+  },
   // picker:{
   //   color: 'black',
   //   backgroundColor: '#fff',

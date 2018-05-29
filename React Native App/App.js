@@ -1,7 +1,6 @@
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import FlipToggle from 'react-native-flip-toggle-button'
 import PresetButton from './components/PresetButton.js'
-// import CustomButton from '.components/CustomButton.js'
 import CustomPage from './components/CustomPage.js'
 import ColorWheel from './components/ColorWheel.js'
 import Lock from './components/Lock.js'
@@ -20,12 +19,11 @@ import {
   View
 } from 'react-native'
 
-
 export default class App extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = { 
+    this.state = {
       preset:'customColor',
       lockState: false,
       pageToggle:true,
@@ -33,11 +31,33 @@ export default class App extends React.Component {
       gray:true
     }
 
-    this.socket = new ReconnectingWebSocket('ws://192.168.4.1:81/')
+    // this.socket = new ReconnectingWebSocket('ws://192.168.4.1:81/')
+    this.socket = new ReconnectingWebSocket('ws://192.168.1.8:81/')
 
     this.socket.addEventListener('open', () => {
-        this.socket.send('Hello')
-        this.setState({connected:true})
+      this.setState({connected:true})
+    });
+
+    this.socket.addEventListener('message', (message) => {
+      console.log('recived: ' + message.data)
+      if(message.data === 'mishaOnline'){
+        console.log('here')
+        this.setState({lockState:true})
+      }else if(message.data === 'mishaOFFOnline'){
+        this.setState({lockState:false})
+
+      }
+    //   if(message.data.length === 14){
+    //       let green = message.data.substring(5,8),
+    //       let blue = message.data.substring(9,12),
+    //       let red = message.data.substring(1,4),
+    //     this.setState({
+    //       CustomColorFromServer:{
+    //         selection:message.data.substring(12,15),
+
+    //       }
+    //     })
+    //   }
     });
 
     this.socket.addEventListener('error', () => {
@@ -54,69 +74,43 @@ export default class App extends React.Component {
     this.sendCustomColor = this.sendCustomColor.bind(this)
   }
 
-      // var ws = new WebSocket('ws://192.168.4.1:81/');
-
-    // ws.onopen = () => {
-    //   this.ws.send('Hello');
-    //   this.setState({connected:true})}}
-    // };
-
-    // ws.onmessage = (e) => {
-    //   // a message was received
-    //   console.log(e.data);
-    // };
-
-    // ws.onerror = (e) => {
-    //   // an error occurred
-    //   console.log(e.message);
-    // };
-
-    // ws.onclose = (e) => {
-    //   // connection closed
-    //   this.setState({connected:false})
-    // };
-
   sendCustomColor(data){
     if(this.state.connected){
       this.setState({gray:true, preset:'customColor'})
       // this.rws.send(data)
       this.socket.send(data)
     }
-    else
-      Alert.alert('Not Connected')
+    // else
+    //   Alert.alert('Not Connected')
   }
 
   sendLockState(lockState){
     if(this.state.connected){
       if(lockState)
-        // this.rws.send('mishaOnline')
         this.socket.send('mishaOnline')
 
       else
-        // this.rws.send('mishaOFFOnline')
         this.socket.send('mishaOFFOnline')
 
     }
-    else
-      Alert.alert('Not Connected')
+    // else
+    //   Alert.alert('Not Connected')
   }
 
   sendPreset(preset){
     if(this.state.connected){
       this.setState({gray:true, preset:preset})
-      // this.rws.send(preset)
       this.socket.send(preset)
     }
-    else
-      Alert.alert('Not Connected')
+    // else
+    //   Alert.alert('Not Connected')
   }
 
   sendPresetSpeed(action){
     if(this.state.connected)
       this.socket.send(action)
-      // this.rws.send(action)
-    else
-      Alert.alert('Not Connected')
+    // else
+    //   Alert.alert('Not Connected')
   }
 
   render() {
@@ -147,7 +141,7 @@ export default class App extends React.Component {
         <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'}}>
           <ActivityIndicator animating ={!this.state.connected} size={100} color='white' />
         </View>
-        <Lock lockState={this.lockState} sendLockState={this.sendLockState}/>
+        <Lock lockState={this.state.lockState} sendLockState={this.sendLockState}/>
       </View>
     );
   }
