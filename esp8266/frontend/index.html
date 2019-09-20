@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name = "viewport" charset="utf-8" content = "width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0" >
+	<title>Led Lights Controller</title>
+	<style type="text/css">
+		.button {
+			background-color: #4CAF50;
+			border: none;
+			color: white;
+			padding-top: 10px;
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			min-width: 170px;
+			box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+			border-radius: 12px;
+			outline:none;
+			margin: 20px 0px;
+		}
+		body {
+			font-family: Arial, Helvetica, Sans-Serif; 
+			Color: #000000; 
+		}
+
+		.center {
+			padding: 70px 0;
+			text-align: center;
+		}
+
+		.spacing{
+			word-spacing: 30px;
+			padding: 15px 0px;
+		}
+		#snackbar {
+			visibility: hidden; /* Hidden by default. Visible on click */
+			min-width: 250px; /* Set a default minimum width */
+			margin-left: -125px; /* Divide value of min-width by 2 */
+			background-color: #333; /* Black background color */
+			color: #fff; /* White text color */
+			text-align: center; /* Centered text */
+			border-radius: 2px; /* Rounded borders */
+			padding: 16px; /* Padding */
+			position: fixed; /* Sit on top of the screen */
+			z-index: 1; /* Add a z-index if needed */
+			left: 50%; /* Center the snackbar */
+			bottom: 30px; /* 30px from the bottom */
+		}
+
+		/* Show the snackbar when clicking on a button (class added with JavaScript) */
+		#snackbar.show {
+			visibility: visible; /* Show the snackbar */
+        /* Add animation: Take 0.5 seconds to fade in and out the snackbar. 
+        However, delay the fade out process for 2.5 seconds */
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    /* Animations to fade the snackbar in and out */
+    @-webkit-keyframes fadein {
+    	from {bottom: 0; opacity: 0;} 
+    	to {bottom: 30px; opacity: 1;}
+    }
+
+    @keyframes fadein {
+    	from {bottom: 0; opacity: 0;}
+    	to {bottom: 30px; opacity: 1;}
+    }
+
+    @-webkit-keyframes fadeout {
+    	from {bottom: 30px; opacity: 1;} 
+    	to {bottom: 0; opacity: 0;}
+    }
+
+    @keyframes fadeout {
+    	from {bottom: 30px; opacity: 1;}
+    	to {bottom: 0; opacity: 0;}
+    }
+
+</style>
+<script type="text/javascript">
+	var disabled = false;
+
+	function buttonclick(e) {
+		if(disabled) {
+			showSncakbar("Wait for last selection to be sent");
+			console.log("The last request is not completed yet")
+		}
+		else {
+			disabled = true
+			showSncakbar("Sending");
+			fetch('http://1.7.3.8/preset', {
+				method: "POST", 
+				body: JSON.stringify(e.id)
+			}).then(res => {
+				console.log("Request complete! response:", res);
+				showSncakbar("Sent: " + res.status);
+				disabled = false;
+			}).catch(error => {
+				console.error(error)
+				showSncakbar(error);
+				disabled = false;
+			});
+		}
+	}
+
+	function showSncakbar(text) {
+		var x = document.getElementById("snackbar");
+		x.innerHTML = text;
+		x.className = "show";
+		setTimeout(
+			function() { 
+				x.className = x.className.replace("show", "");
+			}, 3000);
+	}
+</script>
+</head>
+<body>
+	<div class="center">
+		<h1 onclick="location.href='/'">
+			ʕ•ᴥ•ʔ
+		</h1>
+		<b></b>
+		<div class="spacing">
+			<button id="ledoff" type="button" class="button" onclick="buttonclick(this);">Off</button>
+			<button id="rainbow" type="button" class="button" onclick="buttonclick(this);">RainBow</button>
+			<button id="glitterbow" type="button" class="button" onclick="buttonclick(this);">GlitterBow</button>
+			<button id="police" type="button" class="button" onclick="buttonclick(this);">Cop Mode</button>
+			<button id="confetti" type="button" class="button" onclick="buttonclick(this);">Confetti</button>
+			<button id="sinelon" type="button" class="button" onclick="buttonclick(this);">DotTrail</button>
+			<button id="fourSinelons" type="button" class="button" onclick="buttonclick(this);">4DotTrail</button>
+			<button id="color" type="button" class="button" onclick="window.location.href='/color';">Custom Color</button>
+			<button id="brightnessDown" type="button" class="button" onclick="buttonclick(this);">Brightness -</button>
+			<button id="brightnessUp" type="button" class="button" onclick="buttonclick(this);">Brightness +</button>
+			<button id="speedDown" type="button" class="button" onclick="buttonclick(this);">Speed -</button>
+			<button id="speedUp" type="button" class="button" onclick="buttonclick(this);">Speed +</button>
+		</div>
+		<br><br>
+		<div id="snackbar"></div>
+	</div>
+</body>
+</html>
