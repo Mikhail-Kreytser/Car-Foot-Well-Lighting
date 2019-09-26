@@ -12,9 +12,8 @@ FASTLED_USING_NAMESPACE
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
 
-
 #define COLOR_ORDER GRB
-#define BRIGHTNESS  200
+#define BRIGHTNESS  195
 #define LED_TYPE    WS2812B
 #define NUM_LEDS    40
 #define DATA_PIN    D1
@@ -29,8 +28,6 @@ unsigned long time_now = 0;
 uint8_t gCurrentPatternNumber = 0;      // Index number of which pattern is current
 uint8_t gHue = 0;                       // Rotating "base color" used by many of the patterns
 uint32_t customColorValue;              // Custom color
-// int fadeAmount = 1;
-// int brightness = 0; 
 
 static const char ssid[]     = "ledLights";
 static const char password[] = "password";
@@ -50,43 +47,36 @@ String getContentType(String filename){
   return "text/plain";
 }
 
-void sendDebugInfo(){                                   // Send debug info
+void sendDebugInfo(){                   // Send debug info
   char buffer [10];
   String currentBright = String(itoa(FastLED.getBrightness(), buffer, 10));
   String maxBright = String(itoa(maxBrightness, buffer, 10));
   String fps = String(itoa(framesPerSecond, buffer, 10));
+  String currentCustomColor = String(itoa(customColorValue, buffer, 16));
  
   String info = "<h2>Info:</h2><table>";
   info += "<tr><td>Current Brightness:</td><td>"+ currentBright +"</td></tr>";
   info += "<tr><td>Max Brightness:</td><td>" + maxBright +"</td></tr>";
   info += "<tr><td>Current FPS:</td><td>" + fps +"</td></tr></table>";
+  info += "<tr><td>Current Custom Color:</td><td>" + currentCustomColor +"</td></tr></table>";
   info += "<h2>SavedFile:</h2><table>";
 
-  File savedStateFile = SPIFFS.open("/savedStates.txt", "r");
-  if (savedStateFile) {
-    while(savedStateFile.available()) {
-      String line = savedStateFile.readStringUntil('\n');
-      if (line.indexOf("PatternNumber" >= 0)) {
-        info += "<tr><td>Saved Pattern:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr></table>";
-      } else if (line.indexOf("ColorValue") >= 0){
-        info += "<tr><td>Saved Custom Color:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr></table>";
-      } else if (line.indexOf("Speed" >= 0)) {
-        info += "<tr><td>Saved FPS:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr></table>";
-      }      
-    }
-  } else info += "<tr><td>Not Found:</td><td></table>"
-  savedStateFile.close();
-
- // String customColor = (char*)customColorValue;
- // String pattern = (char*)gPatterns[gCurrentPatternNumber];
-
- // info = "<tr><td>Current Custom Color:</td><td>" + customColor +"</td></tr>";
- // info = "<tr><td>Current Pattern:</td><td>" + pattern +"</td></tr>";
+  if (SPIFFS.exists("/savedStates.txt")) {
+    File savedStateFile = SPIFFS.open("/savedStates.txt", "r");
+    String line = savedStateFile.readStringUntil('\n');
+    info += "<tr><td>Saved Pattern:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr>";
+    line = savedStateFile.readStringUntil('\n');
+    info += "<tr><td>Saved Custom Color:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr>";
+    line = savedStateFile.readStringUntil('\n');
+    info += "<tr><td>Saved FPS:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr>";
+    savedStateFile.close();
+    info += "</table>";
+  } else info += "<tr><td>Not Found:</td><td></table>";
  server.send(200, "text/html", info);
 }
 
 bool handleFileRead(String path){                       // send the right file to the client (if it exists)
-                                                        // Serial.println("handleFileRead: " + path);
+  Serial.println("handleFileRead: " + path);
   if(path.endsWith("/")) path += "index.html";          // If a folder is requested, send the index file
   else if(path.endsWith("info")) {
     sendDebugInfo();                                    // Sends info for debuging.
@@ -103,10 +93,10 @@ bool handleFileRead(String path){                       // send the right file t
     File file = SPIFFS.open(path, "r");                 // Open the file
     size_t sent = server.streamFile(file, contentType); // Send it to the client
     file.close();                                       // Close the file again
-                                                        // Serial.println(String("\tSent file: ") + path);
+    // Serial.println(String("\tSent file: ") + path);
     return true;
   }
-                                                        // Serial.println(String("\tFile Not Found: ") + path);
+  // Serial.println(String("\tFile Not Found: ") + path);
   return false;                                         // If the file doesn't exist, return false
 }
 
@@ -119,7 +109,7 @@ void handlePreset(){                                    // Handle preset request
     // for(int i=1; i<input.length()-1; i++) {Serial.print(input.charAt(i));}
     // Serial.println("");
       
-         if (input == "\"glitterbow\"") gCurrentPatternNumber = 1;
+    if (input == "\"glitterbow\"") gCurrentPatternNumber = 1;
     else if (input == "\"confetti\"")   gCurrentPatternNumber = 2;
     else if (input == "\"rainbow\"")    gCurrentPatternNumber = 0;
     else if (input == "\"police\"")     gCurrentPatternNumber = 4;
@@ -149,6 +139,9 @@ void handleCustomColor(){                               // Handle custom color r
   else server.send_P(403, "text/plain", "403: Forbidden");
 }
 
+typedef void (*SimplePatternList[])();  // List of patterns
+SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, customColor, police, ledoff, sinelon, fourSinelons};
+
 void handleRequest() {                                   // If the client requests any URI
   if (server.method() == HTTP_POST){                     // Check if it is a Post request
     if(server.uri() == "/color") handleCustomColor();    // Handle custom color post request
@@ -159,17 +152,13 @@ void handleRequest() {                                   // If the client reques
     server.send(404, "text/plain", "404: Not Found");    // otherwise, respond with a 404 (Not Found) error
 }
 
-
-typedef void (*SimplePatternList[])();                   // List of patterns
-SimplePatternList gPatterns = { rainbow, rainbowWithGlitter, confetti, customColor, police, ledoff, sinelon, fourSinelons};
-
 void changeBrightness(valueChange upDown){               // Change strip brightness
   uint8_t brightnessLevel = FastLED.getBrightness();
-  if(upDown == up && brightnessLevel <= (maxBrightness - 5)){
-    FastLED.setBrightness(brightnessLevel + 5);
+  if(upDown == up && brightnessLevel <= (maxBrightness - 15)){
+    FastLED.setBrightness(brightnessLevel + 15);
   }
-  else if(upDown == down && brightnessLevel > 5) {
-    FastLED.setBrightness(brightnessLevel - 5);  
+  else if(upDown == down && brightnessLevel > 15) {
+    FastLED.setBrightness(brightnessLevel - 15);  
   }
 }
 
@@ -258,20 +247,16 @@ void customColor(){
 }
 
 void checkForSavedStates(){
-  File savedStateFile = SPIFFS.open("/savedStates.txt", "r");
-  if (savedStateFile) {
-    while(savedStateFile.available()) {
-      String line = savedStateFile.readStringUntil('\n');
-      if (line.indexOf("PatternNumber" >= 0)) {
-        gCurrentPatternNumber = line.substring(line.indexOf("=")+1).toInt(); 
-      } else if (line.indexOf("ColorValue") >= 0){
-        customColorValue = line.substring(line.indexOf("=")+1).toInt();
-      } else if (line.indexOf("Speed" >= 0)) {
-        framesPerSecond = line.substring(line.indexOf("=")+1).toInt(); 
-      }      
-    }
+  if (SPIFFS.exists("/savedStates.txt")) {
+    File savedStateFile = SPIFFS.open("/savedStates.txt", "r");
+    String line = savedStateFile.readStringUntil('\n');
+    gCurrentPatternNumber = line.substring(line.indexOf("=")+1).toInt();
+    line = savedStateFile.readStringUntil('\n');
+    customColorValue = line.substring(line.indexOf("=")+1).toInt();
+    line = savedStateFile.readStringUntil('\n');
+    framesPerSecond = line.substring(line.indexOf("=")+1).toInt();
+    savedStateFile.close();
   }
-  savedStateFile.close();
 }
 
 void saveState(){

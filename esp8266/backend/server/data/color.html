@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name = "viewport" charset="utf-8" content = "width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0" >
+		<title>Led Lights Controller</title>
+		<style type="text/css">
+			body {
+				font-family: Arial, Helvetica, Sans-Serif; 
+				Color: #000000; 
+			}
+
+			.center {
+				padding: 70px 0;
+				text-align: center;
+			}
+
+			.spacing{
+				word-spacing: 30px;
+				padding: 15px 0px;
+			}
+			.slideContainer {
+				position: relative;
+				left:30%;
+				width: 40%;
+			}
+
+			.slider{
+				-webkit-appearance: none;
+				width: 300px;
+				height: 15px;
+				border-radius: 5px;
+				background: #d3d3d3;
+				outline: none;
+				opacity: 0.7;
+				-webkit-transition: .2s;
+				transition: opacity .2s;
+			}
+			.slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 25px;
+				height: 25px;
+				border-radius: 50%;
+				background: #000000;
+				cursor: pointer;
+			}
+
+			.slider::-moz-range-thumb {
+
+				width: 25px;
+				height: 25px;
+				border-radius: 50%;
+				background: #000000;
+				cursor: pointer;
+			}
+
+			.hueGradient {
+				background: #ff3232; /* Old browsers */
+
+				background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ff3232), color-stop(20%,#fff130), color-stop(35%,#45ff30), color-stop(52%,#28fff0), color-stop(71%,#282cff), color-stop(88%,#ff28fb), color-stop(100%,#ff0094)); /* Chrome,Safari4+ */
+				background: -webkit-linear-gradient(left,  #ff3232 0%,#fff130 20%,#45ff30 35%,#28fff0 52%,#282cff 71%,#ff28fb 88%,#ff0094 100%); /* Chrome10+,Safari5.1+ */
+			}
+
+			.satGradient  {
+				background: #ff3232; /* Old browsers */
+				background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ffffff), color-stop(100%,#ff0000)); /* Chrome,Safari4+ */
+				background: -webkit-linear-gradient(left,  #ffffff 0%,#ff0000 100%); /* Chrome10+,Safari5.1+ */
+			}
+
+			.valGradient  {
+				background: #ff3232; /* Old browsers */
+				background: -webkit-gradient(linear, left top, right top, color-stop(0%,#000000), color-stop(100%,#ff0000)); /* Chrome,Safari4+ */
+				background: -webkit-linear-gradient(left,  #000000 0%,#ff0000 100%); /* Chrome10+,Safari5.1+ */
+			}
+
+			.colorPreview {
+				background-color: #ff0000;
+				border: none;
+				color: white;
+				padding-top: 10px;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				min-width: 340px;
+				min-height: 100px;
+				font-size: 16px;
+				box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+				border-radius: 12px;
+				outline:none;
+				margin: 20px 0px;
+			}
+			#snackbar {
+				visibility: hidden; /* Hidden by default. Visible on click */
+				min-width: 250px; /* Set a default minimum width */
+				margin-left: -125px; /* Divide value of min-width by 2 */
+				background-color: #333; /* Black background color */
+				color: #fff; /* White text color */
+				text-align: center; /* Centered text */
+				border-radius: 2px; /* Rounded borders */
+				padding: 16px; /* Padding */
+				position: fixed; /* Sit on top of the screen */
+				z-index: 1; /* Add a z-index if needed */
+				left: 50%; /* Center the snackbar */
+				bottom: 30px; /* 30px from the bottom */
+			}
+
+			/* Show the snackbar when clicking on a button (class added with JavaScript) */
+			#snackbar.show {
+				visibility: visible; /* Show the snackbar */
+	      /* Add animation: Take 0.5 seconds to fade in and out the snackbar. 
+	      However, delay the fade out process for 2.5 seconds */
+	      -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+	      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+	  }
+
+	  /* Animations to fade the snackbar in and out */
+	  @-webkit-keyframes fadein {
+	  	from {bottom: 0; opacity: 0;} 
+	  	to {bottom: 30px; opacity: 1;}
+	  }
+
+	  @keyframes fadein {
+	  	from {bottom: 0; opacity: 0;}
+	  	to {bottom: 30px; opacity: 1;}
+	  }
+
+	  @-webkit-keyframes fadeout {
+	  	from {bottom: 30px; opacity: 1;} 
+	  	to {bottom: 0; opacity: 0;}
+	  }
+
+	  @keyframes fadeout {
+	  	from {bottom: 30px; opacity: 1;}
+	  	to {bottom: 0; opacity: 0;}
+	  }
+	</style>
+	<script type="text/javascript">
+		function showSncakbar(text) {
+			var x = document.getElementById("snackbar");
+			x.innerHTML = text;
+			x.className = "show";
+			setTimeout(
+				function() { 
+					x.className = x.className.replace("show", "");
+				}, 3000);
+		}
+		var selectedColor = "#ffffff";
+		var disabled = false;
+
+		function buttonclick(e) {
+			if(disabled) {
+				showSncakbar("Wait for last selection to be sent");
+				console.log("The last request is not completed yet")
+			}
+			else {
+				disabled = true;
+				showSncakbar("Sending");
+				fetch('http://1.7.3.8/color', {
+					method: "POST", 
+					body: JSON.stringify(selectedColor.substring(1, 7))
+				}).then(res => {
+					console.log("Request complete! response:", res);
+					showSncakbar("Sent: " + res.status);
+					disabled = false;
+				}).catch(error => {
+					console.error('Error:', error)
+					showSncakbar(error);
+					disabled = false;
+				});
+			}
+		}
+
+		function componentToHex(c) {
+			var hex = c.toString(16);
+			return hex.length == 1 ? "0" + hex : hex;
+		}
+
+		function rgbToHex(r, g, b) {
+			return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+		}
+
+	    function hsvToRgb(h, s, v) {
+	    	var r, g, b;
+	    	var i;
+	    	var f, p, q, t;
+
+	        // Make sure our arguments stay in-range
+	        h = Math.max(0, Math.min(360, h));
+	        s = Math.max(0, Math.min(100, s));
+	        v = Math.max(0, Math.min(100, v));
+
+	        // We accept saturation and value arguments from 0 to 100 because that's
+	        // how Photoshop represents those values. Internally, however, the
+	        // saturation and value are calculated from a range of 0 to 1. We make
+	        // That conversion here.
+	        s /= 100;
+	        v /= 100;
+
+	        if(s == 0) {
+	            // Achromatic (grey)
+	            r = g = b = v;
+	            return [
+	            Math.round(r * 255), 
+	            Math.round(g * 255), 
+	            Math.round(b * 255)
+	            ];
+	        }
+
+	        h /= 60; // sector 0 to 5
+	        i = Math.floor(h);
+	        f = h - i; // factorial part of h
+	        p = v * (1 - s);
+	        q = v * (1 - s * f);
+	        t = v * (1 - s * (1 - f));
+
+	        switch(i) {
+	        	case 0:
+	        	r = v;
+	        	g = t;
+	        	b = p;
+	        	break;
+
+	        	case 1:
+	        	r = q;
+	        	g = v;
+	        	b = p;
+	        	break;
+
+	        	case 2:
+	        	r = p;
+	        	g = v;
+	        	b = t;
+	        	break;
+
+	        	case 3:
+	        	r = p;
+	        	g = q;
+	        	b = v;
+	        	break;
+
+	        	case 4:
+	        	r = t;
+	        	g = p;
+	        	b = v;
+	        	break;
+
+	            default: // case 5:
+	            r = v;
+	            g = p;
+	            b = q;
+	        }
+
+	        return {r : Math.round(r * 255), g: Math.round(g * 255), b:Math.round(b * 255)};
+	    }
+
+
+	    function customColor(slider) {
+	    	var hue = parseInt(document.getElementById("hue").value) - 1;
+	    	var sat = parseInt(document.getElementById("sat").value);
+	    	var val = parseInt(document.getElementById("colorVal").value);
+	    	var rgb = hsvToRgb(hue, sat, val);
+	    	var currColorHueRGB = hsvToRgb(hue, 100, 100);
+	    	var currColorHueHSV = rgbToHex(currColorHueRGB.r, currColorHueRGB.g, currColorHueRGB.b);
+	    	selectedColor = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+	    	if(slider.id == "hue"){
+	    		document.getElementById("hueVal").innerHTML = slider.value;
+	    		var currColorHue = hsvToRgb(hue, 100, 100);
+
+		    	document.getElementById("sat").style.background = `
+					-webkit-gradient(linear, left top, right top, color-stop(0%,#ffffff), color-stop(100%,${currColorHueHSV}))`;
+				document.getElementById("colorVal").style.background = `
+				-webkit-gradient(linear, left top, right top, color-stop(0%,#000000), color-stop(100%,${currColorHueHSV}))`;
+	    	}
+	    	else if(slider.id == "sat")
+	    		document.getElementById("satVal").innerHTML = slider.value;
+	    	else
+	    		document.getElementById("colorValue").innerHTML = slider.value;
+	    	document.getElementById("color").style.background = selectedColor;
+	    }
+	</script>
+	</head>
+	<body>
+		<div class="center">
+			<h1 onclick="location.href='/'">
+				ʕ•ᴥ•ʔ
+			</h1>
+			<div id="ledstatus">
+				<b/>
+			</div>
+			<div class="spacing">
+				<button id="color" type="button" class="colorPreview" onclick="buttonclick(this);"></button>
+			</div>
+			<br/>
+			<div container >
+				<div class="slideContainer">
+					<input type="range" min="1" max="360" value="360" oninput="customColor(this)" class="slider hueGradient" name="slider" id="hue">
+					<p><span id="hueVal">360</span></p>
+				</div>
+				<div class="slideContainer">
+					<input type="range" min="1" max="100" value="100" oninput="customColor(this)" class="slider satGradient" name="slider" id="sat">
+					<p><span id="satVal">100</span></p>
+				</div>
+				<div class="slideContainer">
+					<input type="range" min="0" max="100" value="100" oninput="customColor(this)" class="slider valGradient" name="slider" id="colorVal">
+					<p><span id="colorValue">100</span></p>
+				</div>
+			</div>
+		</div>      
+	<div id="snackbar"></div>
+</div>
+	</body>
+</html>
