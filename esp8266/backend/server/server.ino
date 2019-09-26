@@ -14,7 +14,7 @@ FASTLED_USING_NAMESPACE
 
 
 #define COLOR_ORDER GRB
-#define BRIGHTNESS  120
+#define BRIGHTNESS  200
 #define LED_TYPE    WS2812B
 #define NUM_LEDS    40
 #define DATA_PIN    D1
@@ -50,9 +50,48 @@ String getContentType(String filename){
   return "text/plain";
 }
 
+void sendDebugInfo(){                                   // Send debug info
+  char buffer [10];
+  String currentBright = String(itoa(FastLED.getBrightness(), buffer, 10));
+  String maxBright = String(itoa(maxBrightness, buffer, 10));
+  String fps = String(itoa(framesPerSecond, buffer, 10));
+ 
+  String info = "<h2>Info:</h2><table>";
+  info += "<tr><td>Current Brightness:</td><td>"+ currentBright +"</td></tr>";
+  info += "<tr><td>Max Brightness:</td><td>" + maxBright +"</td></tr>";
+  info += "<tr><td>Current FPS:</td><td>" + fps +"</td></tr></table>";
+  info += "<h2>SavedFile:</h2><table>";
+
+  File savedStateFile = SPIFFS.open("/savedStates.txt", "r");
+  if (savedStateFile) {
+    while(savedStateFile.available()) {
+      String line = savedStateFile.readStringUntil('\n');
+      if (line.indexOf("PatternNumber" >= 0)) {
+        info += "<tr><td>Saved Pattern:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr></table>";
+      } else if (line.indexOf("ColorValue") >= 0){
+        info += "<tr><td>Saved Custom Color:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr></table>";
+      } else if (line.indexOf("Speed" >= 0)) {
+        info += "<tr><td>Saved FPS:</td><td>" + line.substring(line.indexOf("=")+1) +"</td></tr></table>";
+      }      
+    }
+  } else info += "<tr><td>Not Found:</td><td></table>"
+  savedStateFile.close();
+
+ // String customColor = (char*)customColorValue;
+ // String pattern = (char*)gPatterns[gCurrentPatternNumber];
+
+ // info = "<tr><td>Current Custom Color:</td><td>" + customColor +"</td></tr>";
+ // info = "<tr><td>Current Pattern:</td><td>" + pattern +"</td></tr>";
+ server.send(200, "text/html", info);
+}
+
 bool handleFileRead(String path){                       // send the right file to the client (if it exists)
                                                         // Serial.println("handleFileRead: " + path);
   if(path.endsWith("/")) path += "index.html";          // If a folder is requested, send the index file
+  else if(path.endsWith("info")) {
+    sendDebugInfo();                                    // Sends info for debuging.
+    return true;
+  }
   else if(path.endsWith(".css"));                       // If ends with .css do nothing
   else if(path.endsWith(".js"));                        // If ends with .js do nothing
   else path += ".html";                                 // Add .html
@@ -75,10 +114,10 @@ void handlePreset(){                                    // Handle preset request
   if (server.args() == 1){
     server.send(200, "text/plain", "200: Okay");        // Respond to client
     String input = server.arg(0);                       // Get request data
-    
-                                                        // Serial.print("Preset: ");
-                                                        // for(int i=1; i<input.length()-1; i++) {Serial.print(input.charAt(i));}
-                                                        // Serial.println("");
+
+    // Serial.print("Preset: ");
+    // for(int i=1; i<input.length()-1; i++) {Serial.print(input.charAt(i));}
+    // Serial.println("");
       
          if (input == "\"glitterbow\"") gCurrentPatternNumber = 1;
     else if (input == "\"confetti\"")   gCurrentPatternNumber = 2;
@@ -100,9 +139,9 @@ void handleCustomColor(){                               // Handle custom color r
   if(server.args() == 1) {
     server.send(200, "text/plain", "200: Okay");        // Respond to client
     String colorCode ="0x"+ server.arg(0).substring(1,7);
-                                                        // Serial.print("Custom color code: ");
-                                                        // for(int i=0; i<colorCode.length(); i++){Serial.print(colorCode.charAt(i));}
-                                                        // Serial.println("");
+    // Serial.print("Custom color code: ");
+    // for(int i=0; i<colorCode.length(); i++){Serial.print(colorCode.charAt(i));}
+    // Serial.println("");
     customColorValue = strtoul(colorCode.c_str(), NULL, 16);
     gCurrentPatternNumber = 3;                          // Set mode to solid color
     saveState();                                        // Save current state to file
