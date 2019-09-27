@@ -184,7 +184,7 @@ void police() {
   // red and blue switching
   int grouped = (NUM_LEDS/4);
   for(int i = 0; i < grouped; i++){
-    if(policeCounter < 30){
+    if(policeCounter < 120){
       leds[i] = CRGB::Blue;
       leds[i + grouped] = CRGB::Red;
       leds[i + (2 * grouped)] = CRGB::Blue;
@@ -195,7 +195,7 @@ void police() {
       leds[i + (2 * grouped)] = CRGB::Red;
       leds[i + (3 * grouped)] = CRGB::Blue;
     }
-    if(policeCounter == 60){
+    if(policeCounter == 240){
       policeCounter = 0;
     }else {
       policeCounter++;   
