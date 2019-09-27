@@ -204,22 +204,10 @@ void police() {
 }
 
 
-void oneSinelon(){
+void sinelon(){
   // a colored dot sweeping back and forth, with fading trails
   fadeToBlackBy( leds, NUM_LEDS, 20);
   int pos = beatsin16( 13, 0, NUM_LEDS-1 );
-  leds[pos] += CHSV( gHue, 255, 192);
-}
-
-void sinelon(){
-  int grouped = (NUM_LEDS/4);
-  // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( leds, NUM_LEDS, 20);
-  int pos = beatsin16( 20, 0, (2*grouped)-1 );
-  if(pos >= grouped){
-   pos += (3*grouped); 
-  }
-  int pos2 = beatsin16( 20, grouped, (3*grouped)-1 );
   leds[pos] += CHSV( gHue, 255, 192);
 }
 
